@@ -45,4 +45,3 @@ jobs:
         TARGET: ${{ env.target }}
         BUILD: ${{ matrix.build_type }}
         TEST_TAGS: ${test_tags}
-      if: (variables['do_test'] == true)
