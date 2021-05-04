@@ -1,0 +1,48 @@
+on:
+  push:
+    branches:
+    - master
+    - release/*
+jobs:
+  Style:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Copyright Check
+      run: tools/StyleChecks/check_copyright.sh
+    - name: Ascii Check
+      run: tools/StyleChecks/check_ascii.sh
+    - name: EOL Check
+      run: tools/StyleChecks/check_eol.sh
+    - name: Tab Check
+      run: tools/StyleChecks/check_tabs.sh
+  MSVC:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build_type:
+        - debug
+        - test
+        - debug
+        - release
+        - debug
+        - test
+        - release
+      max-parallel: 4
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: test\ci.buildone.cmd %TARGET% %BUILD% %SPECIAL%
+      env:
+        TARGET: ${{ env.target }}
+        BUILD: ${{ matrix.build_type }}
+        SPECIAL: ${{ env.special_build }}
+    - name: Test
+      run: test\ci.testone.cmd %TARGET% %BUILD% %TEST_TAGS%
+      env:
+        TARGET: ${{ env.target }}
+        BUILD: ${{ matrix.build_type }}
+        TEST_TAGS: ${test_tags}
+      if: (variables['do_test'] == true)
